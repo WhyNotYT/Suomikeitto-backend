@@ -108,24 +108,35 @@ async def cleanup_task():
     while True:
         await asyncio.sleep(CLEANUP_INTERVAL)
         now = time.time()
-        to_delete = []
+        to_cleanup = []
+
+        # First: find and remove timed-out lobbies from global registry while holding lobbies_lock.
         async with lobbies_lock:
             for name, lobby in list(lobbies.items()):
                 if now - lobby.last_activity > LOBBY_TIMEOUT:
-                    to_delete.append(name)
-            for name in to_delete:
-                lobby = lobbies.pop(name)
-                print(f"[Server] Lobby '{name}' timed out; notifying and deleting")
+                    # remove from registry and keep a reference to the lobby for cleanup outside the lock
+                    lobbies.pop(name, None)
+                    to_cleanup.append((name, lobby))
+
+        # Second: do the actual notify/close operations outside the global lock to avoid deadlocks.
+        for name, lobby in to_cleanup:
+            print(f"[Server] Lobby '{name}' timed out; notifying and deleting")
+            # notify players (broadcast will acquire lobby.lock internally)
+            try:
                 await lobby.broadcast({"type": "lobby_timeout", "message": "Lobby closed due to inactivity"})
-                # close websockets
-                async with lobby.lock:
-                    for pid, ws in list(lobby.players.items()):
-                        try:
-                            await ws.close(code=1001, message=b"Lobby timeout")
-                        except:
-                            pass
-                    lobby.players.clear()
-                    lobby.ready.clear()
+            except Exception as e:
+                print(f"[Server] Error broadcasting timeout for lobby '{name}': {e}")
+
+            # close websockets and clear lobby data while holding lobby.lock
+            async with lobby.lock:
+                for pid, ws in list(lobby.players.items()):
+                    try:
+                        await ws.close(code=1001, message=b"Lobby timeout")
+                    except Exception:
+                        pass
+                lobby.players.clear()
+                lobby.ready.clear()
+
 
 
 # WebSocket handler

@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Leaderboard - Nordic Speed Challenge</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', sans-serif;
+            background: linear-gradient(135deg, #0f3d66 0%, #1a5a8a 50%, #0d2d4d 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            color: #f0f0f0;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 900px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 50px;
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        .header h1 {
+            font-size: 3.5em;
+            font-weight: 700;
+            color: #e8f4f8;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+            letter-spacing: -1px;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            color: #b3d9e8;
+            font-weight: 300;
+            letter-spacing: 2px;
+        }
+
+        .leaderboard {
+            background: rgba(15, 35, 60, 0.7);
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            animation: slideUp 0.8s ease-out;
+        }
+
+        .leaderboard-row {
+            display: grid;
+            grid-template-columns: 50px 1fr 150px 200px;
+            gap: 20px;
+            padding: 18px 25px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+
+        .leaderboard-row:hover {
+            background: rgba(26, 90, 138, 0.4);
+            transform: translateX(8px);
+        }
+
+        .leaderboard-row:last-child {
+            border-bottom: none;
+        }
+
+        .rank {
+            font-size: 1.5em;
+            font-weight: 800;
+            color: #64b5f6;
+            text-align: center;
+            width: 50px;
+        }
+
+        .rank.first {
+            color: #ffd700;
+            font-size: 2em;
+        }
+
+        .rank.second {
+            color: #c0c0c0;
+            font-size: 1.8em;
+        }
+
+        .rank.third {
+            color: #cd7f32;
+            font-size: 1.6em;
+        }
+
+        .lobby-info {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .lobby-name {
+            font-size: 1.15em;
+            font-weight: 600;
+            color: #e8f4f8;
+        }
+
+        .player-name {
+            font-size: 0.9em;
+            color: #9bc4d9;
+        }
+
+        .time {
+            font-size: 1.3em;
+            font-weight: 700;
+            color: #64b5f6;
+            text-align: right;
+            letter-spacing: 0.5px;
+        }
+
+        .timestamp {
+            font-size: 0.85em;
+            color: #7a9fb3;
+            text-align: right;
+            white-space: nowrap;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            font-size: 1.2em;
+            color: #9bc4d9;
+        }
+
+        .error {
+            background: rgba(244, 67, 54, 0.2);
+            border: 1px solid rgba(244, 67, 54, 0.5);
+            color: #ffcdd2;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .medal {
+            display: inline-block;
+            margin-right: 8px;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes rowEnter {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .leaderboard-row {
+            animation: rowEnter 0.5s ease-out backwards;
+        }
+
+        .leaderboard-row:nth-child(1) { animation-delay: 0.1s; }
+        .leaderboard-row:nth-child(2) { animation-delay: 0.15s; }
+        .leaderboard-row:nth-child(3) { animation-delay: 0.2s; }
+        .leaderboard-row:nth-child(4) { animation-delay: 0.25s; }
+        .leaderboard-row:nth-child(5) { animation-delay: 0.3s; }
+        .leaderboard-row:nth-child(6) { animation-delay: 0.35s; }
+        .leaderboard-row:nth-child(7) { animation-delay: 0.4s; }
+        .leaderboard-row:nth-child(8) { animation-delay: 0.45s; }
+        .leaderboard-row:nth-child(9) { animation-delay: 0.5s; }
+        .leaderboard-row:nth-child(10) { animation-delay: 0.55s; }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2.5em;
+            }
+
+            .leaderboard-row {
+                grid-template-columns: 40px 1fr 120px;
+                gap: 12px;
+                padding: 14px 16px;
+            }
+
+            .timestamp {
+                display: none;
+            }
+
+            .time {
+                grid-column: 3;
+                grid-row: 1 / 3;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏔️ Speed Challenge</h1>
+            <p>FASTEST FINISHES</p>
+        </div>
+
+        <div class="leaderboard" id="leaderboard">
+            <div class="loading">Loading leaderboard...</div>
+        </div>
+    </div>
+
+    <script>
+        const getMedalEmoji = (rank) => {
+            if (rank === 1) return '🥇';
+            if (rank === 2) return '🥈';
+            if (rank === 3) return '🥉';
+            return '✦';
+        };
+
+        const formatTime = (seconds) => {
+            return seconds.toFixed(2) + 's';
+        };
+
+        const formatTimestamp = (isoString) => {
+            const date = new Date(isoString);
+            return date.toLocaleString('en-US', {
+                month: 'short',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        };
+
+        const getRankClass = (rank) => {
+            if (rank === 1) return 'first';
+            if (rank === 2) return 'second';
+            if (rank === 3) return 'third';
+            return '';
+        };
+
+        async function loadLeaderboard() {
+            try {
+                const apiUrl = 'https://suomikeitto-backend-battery.2.rahtiapp.fi/api/leaderboard';
+                const corsProxy = 'https://cors-anywhere.herokuapp.com/';
+                const response = await fetch(corsProxy + apiUrl);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const data = await response.json();
+
+                let leaderboard = data.leaderboard || [];
+
+                // Sort by total_time ascending (fastest first)
+                leaderboard.sort((a, b) => a.total_time - b.total_time);
+
+                // Take top 10
+                leaderboard = leaderboard.slice(0, 10);
+
+                if (leaderboard.length === 0) {
+                    document.getElementById('leaderboard').innerHTML = '<div class="loading">No leaderboard entries yet</div>';
+                    return;
+                }
+
+                const leaderboardHtml = leaderboard.map((entry, index) => `
+                    <div class="leaderboard-row">
+                        <div class="rank ${getRankClass(index + 1)}">
+                            <span class="medal">${getMedalEmoji(index + 1)}</span>${index + 1}
+                        </div>
+                        <div class="lobby-info">
+                            <div class="lobby-name">Lobby ${entry.lobby_name}</div>
+                            <div class="player-name">${entry.completed_by}</div>
+                        </div>
+                        <div class="time">${formatTime(entry.total_time)}</div>
+                        <div class="timestamp">${formatTimestamp(entry.timestamp)}</div>
+                    </div>
+                `).join('');
+
+                document.getElementById('leaderboard').innerHTML = leaderboardHtml;
+            } catch (error) {
+                console.error('Error loading leaderboard:', error);
+                document.getElementById('leaderboard').innerHTML = `
+                    <div class="error">
+                        <strong>Unable to load leaderboard</strong><br>
+                        ${error.message}
+                    </div>
+                `;
+            }
+        }
+
+        // Load leaderboard on page load
+        loadLeaderboard();
+
+        // Refresh every 5 seconds
+        setInterval(loadLeaderboard, 5000);
+    </script>
+</body>
+</html>
