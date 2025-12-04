@@ -22,7 +22,7 @@ GODOT_BUILD_DIR = BASE_DIR / "game_build"   # <-- must match your folder name
 
 # Configuration
 HOST = "0.0.0.0"
-PORT = 6969
+PORT = 5000
 LOBBY_TIMEOUT = 300.0  # seconds
 CLEANUP_INTERVAL = 30.0  # seconds
 
