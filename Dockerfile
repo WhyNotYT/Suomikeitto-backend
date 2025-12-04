@@ -25,7 +25,7 @@ RUN pip install --no-cache-dir aiohttp
 
 # Copy application code
 
-COPY app.py /app/app.py
+COPY . /app
 
 # Set ownership for non-root user
 
