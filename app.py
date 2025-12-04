@@ -16,10 +16,13 @@ from datetime import datetime
 from typing import Dict
 
 from aiohttp import web, WSMsgType
+import pathlib
+BASE_DIR = pathlib.Path(__file__).parent
+GODOT_BUILD_DIR = BASE_DIR / "game_build"   # <-- must match your folder name
 
 # Configuration
 HOST = "0.0.0.0"
-PORT = 5000
+PORT = 6969
 LOBBY_TIMEOUT = 300.0  # seconds
 CLEANUP_INTERVAL = 30.0  # seconds
 
@@ -334,6 +337,9 @@ async def http_health(request):
 
 # App setup
 app = web.Application()
+
+
+# 1. All API & websocket routes FIRST
 app.add_routes([
     web.get("/ws/{lobby}/{player_id}", ws_handler),
     web.post("/api/next_level", http_next_level),
@@ -342,6 +348,16 @@ app.add_routes([
     web.get("/api/lobby_status/{lobby_name}", http_lobby_status),
     web.get("/api/health", http_health),
 ])
+
+# Godot build hosted at /game/
+async def serve_index(request):
+    index_path = GODOT_BUILD_DIR / "index.html"
+    return web.FileResponse(index_path)
+
+app.router.add_get("/game", serve_index)  # <-- visit /game to load index.html
+app.router.add_static("/game/", path=str(GODOT_BUILD_DIR), show_index=False)
+
+
 
 # Start background cleanup on startup
 async def on_startup(app):
