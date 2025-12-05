@@ -350,12 +350,18 @@ app.add_routes([
 ])
 
 # Godot build hosted at /game/
+# Serve index.html
 async def serve_index(request):
-    index_path = GODOT_BUILD_DIR / "index.html"
-    return web.FileResponse(index_path)
+    return web.FileResponse(GODOT_BUILD_DIR / "index.html")
 
-app.router.add_get("/game", serve_index)  # <-- visit /game to load index.html
-app.router.add_static("/game/", path=str(GODOT_BUILD_DIR), show_index=False)
+app.router.add_get("/", serve_index)
+
+# Serve all Godot files
+app.router.add_static(
+    "/",
+    path=str(GODOT_BUILD_DIR),
+    show_index=False
+)
 
 
 
