@@ -1,44 +1,40 @@
 # Use official Python base image
-
 FROM python:3.12-slim
 
-# Set environment variables
 
-ENV PYTHONDONTWRITEBYTECODE=1 
-ENV PYTHONUNBUFFERED=1 
-ENV PORT=5000 
+
+# Environment variables
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+ENV PORT=5000
 ENV HOST=0.0.0.0
 
-# Create a non-root user (OpenShift requires non-root)
-
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends bash procps nano && \
+    rm -rf /var/lib/apt/lists/*
+# Create non-root user for OpenShift
 RUN useradd -m gameuser
 
-# Set working directory
 
+# Working directory
 WORKDIR /app
 
-# Copy requirements (if you have a separate requirements.txt)
-
-# For this script, aiohttp is the only dependency
-
-RUN pip install --no-cache-dir aiohttp
+# Install dependencies
+# Adds watchfiles for auto-reload; remove if undesired
+RUN pip install --no-cache-dir aiohttp watchfiles
 
 # Copy application code
-
 COPY . /app
 
-# Set ownership for non-root user
-
+# Set permissions
 RUN chown -R gameuser:gameuser /app
 
 # Switch to non-root user
-
 USER gameuser
 
 # Expose port
-
 EXPOSE 5000
 
-# Set entrypoint
-
-ENTRYPOINT ["python", "app.py"]
+# Default command (can be overridden)
+# Use a small entry script so you can override the command easily
+CMD ["python", "app.py"]
