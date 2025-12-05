@@ -18,11 +18,11 @@ from typing import Dict
 from aiohttp import web, WSMsgType
 import pathlib
 BASE_DIR = pathlib.Path(__file__).parent
-GODOT_BUILD_DIR = BASE_DIR / "game_build"   # <-- must match your folder name
+GODOT_BUILD_DIR = BASE_DIR / "game_build" 
 
 # Configuration
 HOST = "0.0.0.0"
-PORT = 5000
+PORT = 6969
 LOBBY_TIMEOUT = 300.0  # seconds
 CLEANUP_INTERVAL = 30.0  # seconds
 
