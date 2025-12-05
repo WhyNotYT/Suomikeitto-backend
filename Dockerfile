@@ -10,7 +10,7 @@ ENV PORT=5000
 ENV HOST=0.0.0.0
 
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends bash procps nano && \
+    apt-get install -y --no-install-recommends bash procps nano wget && \
     rm -rf /var/lib/apt/lists/*
 # Create non-root user for OpenShift
 RUN useradd -m gameuser
